@@ -21,10 +21,9 @@
         src = ./.;
         hooks = {
           alejandra.enable = true;
-          statix.enable = true;
           deadnix = {
             enable = true;
-            excludes = ["hardware-configuration"];
+            excludes = [".direnv"];
           };
           flake-checker.enable = true;
           ruff.enable = true;
@@ -63,12 +62,7 @@
 
           ${pre-commit-check.shellHook}
 
-          # Make Playwright's patched browsers (including Firefox) available.
-          # These are the Nix-built browsers; they avoid the dynamic downloads
-          # that break on NixOS. Keep your Playwright binding version in sync
-          # with the nixpkgs `playwright-driver` version.
-          export PLAYWRIGHT_BROWSERS_PATH="${pkgs.playwright-driver.browsers}"
-          export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
+          export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib:$LD_LIBRARY_PATH"
         '';
         buildInputs = with pkgs;
           [
@@ -78,6 +72,7 @@
             gnumake
             ruff
             alejandra
+            stdenv.cc.cc.lib
           ]
           ++ pre-commit-check.enabledPackages;
       };
