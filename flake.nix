@@ -62,7 +62,11 @@
 
           ${pre-commit-check.shellHook}
 
+          # fix litellm
           export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib:$LD_LIBRARY_PATH"
+
+          # remove uv warning
+          export UV_LINK_MODE=copy
         '';
         buildInputs = with pkgs;
           [
