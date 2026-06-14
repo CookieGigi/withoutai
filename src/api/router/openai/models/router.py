@@ -1,14 +1,17 @@
+from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends
 from .response import Model
-
-from app.deps import get_models_service
+from containers import AppContainer
 from app.services.ai_models.models import ModelsService
 
 router = APIRouter(prefix="/models", tags=["OpenAI - models"])
 
 
 @router.get("/")
-def get_models(models: ModelsService = Depends(get_models_service)) -> list[Model]:
+@inject
+def get_models(
+    models: ModelsService = Depends(Provide[AppContainer.models_service]),
+) -> list[Model]:
     raw = models.get_model_list()
 
     res: list[Model] = []

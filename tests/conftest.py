@@ -1,18 +1,6 @@
 import pytest
-from httpx import AsyncClient, ASGITransport
-from src.api.app import create_app
 
-# client to test api
-app = create_app()
-
-
-@pytest.fixture
-async def client():
-    async with AsyncClient(
-        transport=ASGITransport(app=app),
-        base_url="http://test",
-    ) as ac:
-        yield ac
+from .configs import client_default  # noqa: F401
 
 
 # anyio backend — needed for async tests
