@@ -4,7 +4,11 @@ from .adapter import ModelAdapter
 
 
 def register(registry: RegistryPort):
-    models = get_valid_models()
+    try:
+        models = get_valid_models()
+    except Exception:
+        # TODO add log
+        pass
 
     for model in models:
         registry.register(ModelAdapter(name=model))
