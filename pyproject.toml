@@ -31,3 +31,10 @@ addopts = "-v --tb=short"
 
 [tool.setuptools]
 packages = ["src"]
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+
+[tool.mypy]
+python_executable = ".venv/bin/python"
