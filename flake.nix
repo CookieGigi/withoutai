@@ -6,22 +6,33 @@
       url = "github:cachix/git-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nixvim = {
+      url = "github:nix-community/nixvim";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
     nixpkgs,
     flake-utils,
     git-hooks,
+    nixvim,
     ...
   }:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = import nixpkgs {inherit system;};
 
+      projectNvim = nixvim.legacyPackages.${system}.makeNixvim {
+        imports = [
+          ./nixvim-base.nix
+          ./nixvim.nix
+        ];
+      };
+
       pre-commit-check = git-hooks.lib.${system}.run {
         src = ./.;
         hooks = {
           alejandra.enable = true;
-          statix.enable = true;
           deadnix = {
             enable = true;
             excludes = ["hardware-configuration"];
@@ -50,25 +61,9 @@
 
       devShells.default = pkgs.mkShell {
         shellHook = ''
-          # Guard against global core.hooksPath which breaks pre-commit hook installation.
-          _global_hooksPath="$(${pkgs.git}/bin/git config --global core.hooksPath 2>/dev/null || true)"
-          if [ -n "$_global_hooksPath" ]; then
-            echo ""
-            echo "WARNING: core.hooksPath is set globally ('$_global_hooksPath')."
-            echo "This prevents pre-commit hooks from being installed by the Nix devShell."
-            echo "Remove it with: git config --global --unset-all core.hooksPath"
-            echo ""
-          fi
-          unset _global_hooksPath
-
           ${pre-commit-check.shellHook}
 
-          # Make Playwright's patched browsers (including Firefox) available.
-          # These are the Nix-built browsers; they avoid the dynamic downloads
-          # that break on NixOS. Keep your Playwright binding version in sync
-          # with the nixpkgs `playwright-driver` version.
-          export PLAYWRIGHT_BROWSERS_PATH="${pkgs.playwright-driver.browsers}"
-          export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
+          export UV_LINK_MODE=copy
         '';
         buildInputs = with pkgs;
           [
@@ -78,6 +73,9 @@
             gnumake
             ruff
             alejandra
+            pyright
+            mypy
+            projectNvim
           ]
           ++ pre-commit-check.enabledPackages;
       };
