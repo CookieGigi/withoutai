@@ -13,3 +13,5 @@ class Config(BaseSettings):
     env: Literal["dev", "testing", "prod"] = Field(
         validation_alias="ENV", default="dev"
     )
+
+    version: str = Field(default="0.0.0", validation_alias="VERSION")

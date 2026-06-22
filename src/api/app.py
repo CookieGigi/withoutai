@@ -11,5 +11,6 @@ def create_app(dependencies: containers.DeclarativeContainer) -> FastAPI:
     register_exception_handlers(app)
 
     app.include_router(defaultRouter)
+    app.include_router(healthRouter)
 
     return app
