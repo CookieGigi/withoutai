@@ -1,0 +1,17 @@
+groq/groq/compound-mini
+groq/qwen/qwen3.6-27b
+groq/groq/compound
+groq/meta-llama/llama-prompt-guard-2-86m
+groq/openai/gpt-oss-20b
+groq/canopylabs/orpheus-arabic-saudi
+groq/qwen/qwen3-32b
+groq/openai/gpt-oss-safeguard-20b
+groq/llama-3.3-70b-versatile
+groq/canopylabs/orpheus-v1-english
+groq/whisper-large-v3
+groq/whisper-large-v3-turbo
+groq/allam-2-7b
+groq/meta-llama/llama-prompt-guard-2-22m
+groq/openai/gpt-oss-120b
+groq/meta-llama/llama-4-scout-17b-16e-instruct
+groq/llama-3.1-8b-instant
