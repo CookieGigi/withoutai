@@ -21,28 +21,43 @@ def _configure_structlog(config: Config):
         return  # idempotent for reloader process
     _structlog_initialized = True
 
-    processors: list[Callable] = [
+    shared_processors: list[Callable] = [
         structlog.contextvars.merge_contextvars,
         structlog.processors.add_log_level,
         structlog.processors.TimeStamper(fmt="iso"),
     ]
 
-    if config.log_format == "json" or config.env == "prod":
-        processors.append(structlog.processors.JSONRenderer())
-    else:
-        processors.append(structlog.dev.ConsoleRenderer(colors=True))
+    is_json = config.log_format == "json" or config.env == "prod"
 
-    logging.basicConfig(
-        format="%(message)s",
-        stream=sys.stdout,
-        level=getattr(logging, config.effective_log_level.upper()),
-    )
+    if is_json:
+        structlog_processors = shared_processors + [structlog.processors.JSONRenderer()]
+        formatter = structlog.stdlib.ProcessorFormatter(
+            processor=structlog.processors.JSONRenderer(),
+            foreign_pre_chain=shared_processors,
+        )
+    else:
+        structlog_processors = shared_processors + [
+            structlog.dev.ConsoleRenderer(colors=True)
+        ]
+        formatter = structlog.stdlib.ProcessorFormatter(
+            processor=structlog.dev.ConsoleRenderer(colors=True),
+            foreign_pre_chain=shared_processors,
+        )
+
+    level = getattr(logging, config.effective_log_level.upper())
+
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(formatter)
+    handler.setLevel(level)
+
+    root_logger = logging.getLogger()
+    root_logger.handlers.clear()
+    root_logger.addHandler(handler)
+    root_logger.setLevel(level)
 
     structlog.configure(
-        processors=processors,
-        wrapper_class=structlog.make_filtering_bound_logger(
-            getattr(logging, config.effective_log_level.upper())
-        ),
+        processors=structlog_processors,
+        wrapper_class=structlog.make_filtering_bound_logger(level),
         context_class=dict,
         logger_factory=structlog.PrintLoggerFactory(),
         cache_logger_on_first_use=True,
@@ -54,11 +69,10 @@ def _configure_structlog(config: Config):
     uvicorn_access.propagate = False
     uvicorn_access.addHandler(logging.NullHandler())
 
-    # --- prevent uvicorn.error duplication ---
-    # uvicorn already has its own handler. Don't let it also propagate to root.
+    # --- route uvicorn.error through root logger for consistent formatting ---
     uvicorn_error = logging.getLogger("uvicorn.error")
-    if uvicorn_error.handlers:
-        uvicorn_error.propagate = False
+    uvicorn_error.handlers.clear()
+    uvicorn_error.propagate = True
 
 
 def create_app(dependencies: containers.DeclarativeContainer) -> FastAPI:

@@ -76,6 +76,7 @@
             pyright
             mypy
             projectNvim
+            lnav
           ]
           ++ pre-commit-check.enabledPackages;
       };
