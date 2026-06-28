@@ -77,6 +77,8 @@
             mypy
             projectNvim
             lnav
+            traefik
+            mkcert
           ]
           ++ pre-commit-check.enabledPackages;
       };

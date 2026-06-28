@@ -1,0 +1,30 @@
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+api:
+  dashboard: true
+
+log:
+  level: DEBUG
+  format: common
+
+entryPoints:
+  web:
+    address: ":8081"  # your public-facing HTTP port
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+  websecure:
+    address: ":8443"
+
+  traefik:
+    address: ":8082"  # dashboard port
+
+providers:
+  file:
+    filename: ./traefik/dynamic.yml
+    watch: true  # auto-reload on file change

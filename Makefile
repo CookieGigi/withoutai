@@ -1,10 +1,10 @@
-.PHONY: install dev dev-with-logs tests watch-logs
+.PHONY: install dev dev-with-logs tests watch-logs traefik
 
 install:
 	uv sync
 
 dev:
-	PYTHONPATH=src uv run fastapi dev --reload-dir src/
+	PYTHONPATH=src uv run fastapi dev --reload-dir src/ --host 127.0.0.1 --port 8000
 
 dev-with-logs:
 	@mkdir -p logs
@@ -16,3 +16,6 @@ tests:
 watch-logs:
 	@mkdir -p logs
 	lnav logs/app.log
+
+traefik:
+	traefik --configFile=./traefik/traefik.yml

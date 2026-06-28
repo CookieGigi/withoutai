@@ -1,0 +1,74 @@
+http:
+  routers:
+    # Route: matches requests and sends them to a service
+    fastapi:
+      rule: "PathPrefix(`/`)"
+      entryPoints:
+        - websecure
+      service: fastapi
+      tls: {}
+      middlewares:
+        - rate-limit
+        - basic-auth
+        - security
+        - compress
+        - retry
+        - circuit-breaker
+        - strip-api-v1
+
+    # Dashboard router (optional, so you can access it via gateway too)
+    dashboard:
+      rule: "PathPrefix(`/dashboard`) || PathPrefix(`/api`)"
+      entryPoints:
+        - traefik
+      service: api@internal
+
+  services:
+    fastapi:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:8000"
+
+  middlewares:
+    rate-limit:
+      rateLimit:
+        average: 10   # 10 requests per...
+        burst: 20     # ...allow bursts up to 20
+        period: 1m    # ...per minute
+
+    basic-auth:
+      basicAuth:
+        users:
+          - "admin:$2b$05$S7WK3Q3sxkat1c8ETP5cV.e4dAhiIe2h.Au7UiluDstGfZlLtP4Da"  # bcrypt hash
+
+    security:
+      headers:
+        customResponseHeaders:
+          Strict-Transport-Security: "max-age=31536000; includeSubDomains"
+          X-Content-Type-Options: "nosniff"
+          X-Frame-Options: "DENY"
+
+    compress:
+      compress: {}
+
+    retry:
+      retry:
+        attempts: 4          # Max retry attempts
+        initialInterval: 100ms  # Wait before first retry
+
+    circuit-breaker:
+      circuitBreaker:
+        expression: "ResponseCodeRatio(500, 600, 0, 600) > 0.5"
+
+    strip-api-v1:
+      stripPrefix:
+        prefixes:
+          - "/api/v1"
+tls:
+  certificates:
+    - certFile: ./traefik/certs/localhost+2.pem
+      keyFile: ./traefik/certs/localhost+2-key.pem
+  options:
+    default:
+      minVersion: VersionTLS12
+      sniStrict: false
