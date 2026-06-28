@@ -2,6 +2,7 @@ from dependency_injector import containers, providers
 from configuration import Config
 from services.health_check_registry import HealthCheckRegistry
 from services.health_check_service import HealthCheckService
+from services.logger_service import LoggerService
 
 
 class APIDependencies(containers.DeclarativeContainer):
@@ -14,3 +15,5 @@ class APIDependencies(containers.DeclarativeContainer):
     health_check_service = providers.Factory(
         HealthCheckService, registry=health_check_registry
     )
+
+    logger_service = providers.Factory(LoggerService, config=config)

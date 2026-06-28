@@ -4,6 +4,6 @@ install:
 	uv sync
 
 dev:
-	PYTHONPATH=src uv run fastapi dev
+	PYTHONPATH=src uv run fastapi dev --reload-dir src/
 tests:
 	uv run pytest
