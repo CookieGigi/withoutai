@@ -1,5 +1,8 @@
+from typing import Any
+
 from langchain_core.messages import AIMessage, BaseMessage
 from litellm.router import Router
+from litellm.utils import get_valid_models
 
 from configuration import Config
 from models.check_result import CheckResult
@@ -7,130 +10,43 @@ from langchain_litellm import ChatLiteLLMRouter
 from interfaces.health_check import HealthCheck
 from services.health_check_registry import HealthCheckRegistry
 
+from services.logger_service import LoggerService
+
 
 class LLMService(HealthCheck):
     _config: Config
     _provider: ChatLiteLLMRouter
+    _model_dict: list[dict[str, Any]]
+    _model_list: list[str]
+    _logger: LoggerService
 
     critical = False
 
-    def __init__(self, config: Config, registry: HealthCheckRegistry) -> None:
+    def __init__(
+        self, config: Config, registry: HealthCheckRegistry, logger: LoggerService
+    ) -> None:
         self._config = config
+        self._logger = logger
 
-        model_list = [
-            {
-                "model_name": "compound-mini",
-                "litellm_params": {
-                    "model": "groq/groq/compound-mini",
-                },
-            },
-            {
-                "model_name": "compound",
-                "litellm_params": {
-                    "model": "groq/groq/compound",
-                },
-            },
-            {
-                "model_name": "qwen3.6-27b",
-                "litellm_params": {
-                    "model": "groq/qwen/qwen3.6-27b",
-                },
-            },
-            {
-                "model_name": "llama-prompt-guard-2-86m",
-                "litellm_params": {
-                    "model": "groq/meta-llama/llama-prompt-guard-2-86m",
-                },
-            },
-            {
-                "model_name": "gpt-oss-20b",
-                "litellm_params": {
-                    "model": "groq/openai/gpt-oss-20b",
-                },
-            },
-            {
-                "model_name": "orpheus-arabic-saudi",
-                "litellm_params": {
-                    "model": "groq/canopylabs/orpheus-arabic-saudi",
-                },
-            },
-            {
-                "model_name": "qwen3-32b",
-                "litellm_params": {
-                    "model": "groq/qwen/qwen3-32b",
-                },
-            },
-            {
-                "model_name": "gpt-oss-safeguard-20b",
-                "litellm_params": {
-                    "model": "groq/openai/gpt-oss-safeguard-20b",
-                },
-            },
-            {
-                "model_name": "llama-3.3-70b-versatile",
-                "litellm_params": {
-                    "model": "groq/llama-3.3-70b-versatile",
-                },
-            },
-            {
-                "model_name": "orpheus-v1-english",
-                "litellm_params": {
-                    "model": "groq/canopylabs/orpheus-v1-english",
-                },
-            },
-            {
-                "model_name": "whisper-large-v3",
-                "litellm_params": {
-                    "model": "groq/whisper-large-v3",
-                },
-            },
-            {
-                "model_name": "whisper-large-v3-turbo",
-                "litellm_params": {
-                    "model": "groq/whisper-large-v3-turbo",
-                },
-            },
-            {
-                "model_name": "allam-2-7b",
-                "litellm_params": {
-                    "model": "groq/allam-2-7b",
-                },
-            },
-            {
-                "model_name": "llama-prompt-guard-2-22m",
-                "litellm_params": {
-                    "model": "groq/meta-llama/llama-prompt-guard-2-22m",
-                },
-            },
-            {
-                "model_name": "gpt-oss-120b",
-                "litellm_params": {
-                    "model": "groq/openai/gpt-oss-120b",
-                },
-            },
-            {
-                "model_name": "llama-4-scout-17b-16e-instruct",
-                "litellm_params": {
-                    "model": "groq/meta-llama/llama-4-scout-17b-16e-instruct",
-                },
-            },
-            {
-                "model_name": "llama-3.1-8b-instant",
-                "litellm_params": {
-                    "model": "groq/llama-3.1-8b-instant",
-                },
-            },
-        ]
+        self._init_model_list()
 
-        router = Router(model_list=model_list)
+        router = Router(model_list=self._model_dict)
 
-        self._provider = ChatLiteLLMRouter(
-            router=router, model="groq/openai/gpt-oss-120b"
-        )
+        self._provider = ChatLiteLLMRouter(router=router, model="gpt-oss-120b")
 
         registry.register(self)
 
-    def get_model(self) -> ChatLiteLLMRouter:
+    def _init_model_list(self):
+        self._model_dict = []
+        self._model_list = []
+
+        for model in get_valid_models():
+            self._model_list.append(model.split("/")[-1])
+            self._model_dict.append(
+                {"model_name": model.split("/")[-1], "litellm_params": {"model": model}}
+            )
+
+    def get_model_provider(self) -> ChatLiteLLMRouter:
         return self._provider
 
     def set_model(self, model_name: str) -> None:
@@ -148,3 +64,6 @@ class LLMService(HealthCheck):
             return CheckResult(name="llm", status="ok", error=None)
         except Exception as e:
             return CheckResult(name="llm", status="error", error=str(e))
+
+    def get_models_list(self) -> list[str]:
+        return self._model_list

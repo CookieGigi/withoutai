@@ -5,7 +5,7 @@ import structlog
 import logging
 import sys
 from api.middleware.logging_middleware import LoggingMiddleware
-from api.router import defaultRouter, healthRouter
+from api.router import defaultRouter, healthRouter, modelsRouter
 from dependency_injector import containers
 from api.exceptions import register_exception_handlers
 from fastapi.middleware.cors import CORSMiddleware
@@ -94,5 +94,6 @@ def create_app(dependencies: containers.DeclarativeContainer) -> FastAPI:
 
     app.include_router(defaultRouter)
     app.include_router(healthRouter)
+    app.include_router(modelsRouter)
 
     return app

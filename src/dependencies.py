@@ -20,5 +20,5 @@ class APIDependencies(containers.DeclarativeContainer):
     logger_service = providers.Factory(LoggerService, config=config)
 
     llm_service = providers.Singleton(
-        LLMService, config=config, registry=health_check_registry
+        LLMService, config=config, registry=health_check_registry, logger=logger_service
     )
