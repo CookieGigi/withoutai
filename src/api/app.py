@@ -5,6 +5,8 @@ from dependency_injector import containers
 from api.exceptions import register_exception_handlers
 from fastapi.middleware.cors import CORSMiddleware
 from services.logger_service import LoggerService
+from ag_ui_langgraph import add_langgraph_fastapi_endpoint  # type: ignore
+from ag_ui_langgraph.agent import LangGraphAgent
 
 
 def create_app(dependencies: containers.DeclarativeContainer) -> FastAPI:
@@ -27,5 +29,10 @@ def create_app(dependencies: containers.DeclarativeContainer) -> FastAPI:
     app.include_router(defaultRouter)
     app.include_router(healthRouter)
     app.include_router(modelsRouter)
+
+    agent = LangGraphAgent(
+        graph=dependencies.agent_service().get_agent(), name="simple"
+    )
+    add_langgraph_fastapi_endpoint(app, agent, path="/agent")
 
     return app

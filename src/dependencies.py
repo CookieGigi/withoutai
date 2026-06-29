@@ -1,5 +1,6 @@
 from dependency_injector import containers, providers
 from configuration import Config
+from services.agent_service import AgentService
 from services.health_check_registry import HealthCheckRegistry
 from services.health_check_service import HealthCheckService
 from services.llm_service import LLMService
@@ -22,3 +23,5 @@ class APIDependencies(containers.DeclarativeContainer):
     llm_service = providers.Singleton(
         LLMService, config=config, registry=health_check_registry, logger=logger_service
     )
+
+    agent_service = providers.Factory(AgentService, llm_service=llm_service)
