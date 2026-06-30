@@ -2,14 +2,28 @@ http:
   routers:
     # Route: matches requests and sends them to a service
     fastapi:
-      rule: "PathPrefix(`/`)"
+      rule: "PathPrefix(`/api`)"
       entryPoints:
         - websecure
       service: fastapi
       tls: {}
       middlewares:
         - rate-limit
-        - basic-auth
+        - security
+        - compress
+        - retry
+        - circuit-breaker
+        - strip-api-v1
+
+
+    frontend:
+      rule: "PathPrefix(`/`)"
+      entryPoints:
+        - websecure
+      service: frontend
+      tls: {}
+      middlewares:
+        - rate-limit
         - security
         - compress
         - retry
@@ -24,6 +38,11 @@ http:
       service: api@internal
 
   services:
+
+    frontend:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:3000"
     fastapi:
       loadBalancer:
         servers:
@@ -35,11 +54,6 @@ http:
         average: 10   # 10 requests per...
         burst: 20     # ...allow bursts up to 20
         period: 1m    # ...per minute
-
-    basic-auth:
-      basicAuth:
-        users:
-          - "admin:$2b$05$S7WK3Q3sxkat1c8ETP5cV.e4dAhiIe2h.Au7UiluDstGfZlLtP4Da"  # bcrypt hash
 
     security:
       headers:
