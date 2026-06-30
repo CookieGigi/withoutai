@@ -6,6 +6,9 @@ install:
 dev:
 	PYTHONPATH=src uv run fastapi dev --reload-dir src/ --host 127.0.0.1 --port 8000
 
+dev-frontend:
+	cd ./frontend/ && npm run dev
+
 dev-with-logs:
 	@mkdir -p logs
 	PYTHONPATH=src uv run fastapi dev --reload-dir src/ 2>&1 | tee logs/app.log
