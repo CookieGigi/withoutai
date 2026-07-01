@@ -4,6 +4,7 @@ import {
   CopilotChat,
   useConfigureSuggestions,
 } from "@copilotkit/react-core/v2";
+import ModelSelector from "./models_selector";
 
 export default function Chat() {
   useConfigureSuggestions({

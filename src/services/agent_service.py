@@ -23,6 +23,7 @@ class AgentService:
         self._graph = workflow.compile(checkpointer=MemorySaver())
 
     async def _call_model(self, state: AgentState) -> AgentState:
+        self._llm_service.set_model(state.model)
         response = await self._llm_service.chat(state.messages)
         return AgentState(messages=state.messages + [response])
 

@@ -29,6 +29,7 @@ class APIDependencies(containers.DeclarativeContainer):
         registry=health_check_registry,
         logger=logger_service,
         models_service=models_service,
+        default_model=None,
     )
 
     agent_service = providers.Factory(AgentService, llm_service=llm_service)
