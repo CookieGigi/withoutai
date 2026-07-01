@@ -1,10 +1,9 @@
-import { CopilotSidebar } from "@copilotkit/react-core/v2";
+import Chat from "./components/chat";
 
 export default function Page() {
   return (
     <main>
-      <h1>Your App</h1>
-      <CopilotSidebar />
+      <Chat />
     </main>
   );
 }
