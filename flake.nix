@@ -53,7 +53,7 @@
             name = "eslint (frontend)";
             entry = let
               eslintScript = pkgs.writeShellScript "frontend-eslint" ''
-                ${pkgs.eslint}/bin/eslint \
+                ./frontend/node_modules/.bin/eslint \
                   --config frontend/eslint.config.mjs \
                   --fix \
                   "$@"
