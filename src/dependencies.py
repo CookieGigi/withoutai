@@ -5,6 +5,7 @@ from services.health_check_registry import HealthCheckRegistry
 from services.health_check_service import HealthCheckService
 from services.llm_service import LLMService
 from services.logger_service import LoggerService
+from services.models_service import ModelsService
 
 
 class APIDependencies(containers.DeclarativeContainer):
@@ -20,8 +21,14 @@ class APIDependencies(containers.DeclarativeContainer):
 
     logger_service = providers.Factory(LoggerService, config=config)
 
+    models_service = providers.Singleton(ModelsService)
+
     llm_service = providers.Singleton(
-        LLMService, config=config, registry=health_check_registry, logger=logger_service
+        LLMService,
+        config=config,
+        registry=health_check_registry,
+        logger=logger_service,
+        models_service=models_service,
     )
 
     agent_service = providers.Factory(AgentService, llm_service=llm_service)

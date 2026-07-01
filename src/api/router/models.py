@@ -2,7 +2,8 @@ from dependency_injector.wiring import inject, Provide
 from fastapi import APIRouter, Depends
 
 from dependencies import APIDependencies
-from services.llm_service import LLMService
+from models.models_info import ModelInfo
+from services.models_service import ModelsService
 
 
 router = APIRouter()
@@ -11,6 +12,6 @@ router = APIRouter()
 @router.get("/models")
 @inject
 async def get_models_list(
-    llm_service: LLMService = Depends(Provide[APIDependencies.llm_service]),
-) -> list[str]:
-    return llm_service.get_models_list()
+    models_service: ModelsService = Depends(Provide[APIDependencies.models_service]),
+) -> list[ModelInfo]:
+    return models_service.get_models_list()
